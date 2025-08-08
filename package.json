@@ -1,0 +1,6 @@
+{
+  "name": "app-production",
+  "scripts": {
+    "start": "cd backend && node index.js"
+  }
+}
