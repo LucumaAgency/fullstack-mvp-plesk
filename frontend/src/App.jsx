@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || '/api';
+const API_URL = import.meta.env.VITE_API_URL || '';
 
 function App() {
   const [notes, setNotes] = useState([]);
@@ -12,13 +12,13 @@ function App() {
   }, []);
 
   const fetchNotes = async () => {
-    const response = await axios.get(`${API_URL}/notes`);
+    const response = await axios.get(`${API_URL}/api/notes`);
     setNotes(response.data);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await axios.post(`${API_URL}/notes`, { content });
+    await axios.post(`${API_URL}/api/notes`, { content });
     setContent('');
     fetchNotes();
   };
