@@ -52,10 +52,13 @@ jobs:
         git checkout --orphan production
         
         # Limpiar y añadir solo archivos de producción
-        git rm -rf .
+        git rm -rf . || true
         cp -r production/* .
         rm -rf production
         
+        # Añadir archivo para Plesk
+        cp .plesk-deploy.sh . || true
+        
         git add .
         git commit -m "Production build from ${{ github.sha }}"
-        git push origin production --force
+        git push -f https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} production
