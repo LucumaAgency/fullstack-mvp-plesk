@@ -43,22 +43,13 @@ jobs:
           }
         }' > production/package.json
         
+        # Copiar script de deploy
+        cp .plesk-deploy.sh production/
+        
     - name: Deploy to production branch
-      run: |
-        git config --global user.email "action@github.com"
-        git config --global user.name "GitHub Action"
-        
-        # Crear branch de producción
-        git checkout --orphan production
-        
-        # Limpiar y añadir solo archivos de producción
-        git rm -rf . || true
-        cp -r production/* .
-        rm -rf production
-        
-        # Añadir archivo para Plesk
-        cp .plesk-deploy.sh . || true
-        
-        git add .
-        git commit -m "Production build from ${{ github.sha }}"
-        git push -f https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} production
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./production
+        publish_branch: production
+        force_orphan: true
