@@ -5,7 +5,7 @@ echo "🚀 Starting deployment..."
 
 # Instalar dependencias de backend
 cd backend
-npm ci --production
+npm install --production
 
 # El frontend ya viene compilado desde GitHub Actions
 echo "✅ Frontend already built by GitHub Actions"
