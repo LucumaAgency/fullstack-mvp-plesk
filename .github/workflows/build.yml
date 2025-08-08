@@ -1,0 +1,61 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        
+    - name: Build Frontend
+      run: |
+        cd frontend
+        npm ci
+        npm run build
+        
+    - name: Prepare Production
+      run: |
+        # Crear estructura para producción
+        mkdir -p production/backend
+        mkdir -p production/public
+        
+        # Copiar frontend build
+        cp -r frontend/dist/* production/public/
+        
+        # Copiar backend
+        cp -r backend/* production/backend/
+        cp -r database production/
+        
+        # Crear package.json de producción
+        echo '{
+          "name": "app-production",
+          "scripts": {
+            "start": "cd backend && node index.js"
+          }
+        }' > production/package.json
+        
+    - name: Deploy to production branch
+      run: |
+        git config --global user.email "action@github.com"
+        git config --global user.name "GitHub Action"
+        
+        # Crear branch de producción
+        git checkout --orphan production
+        
+        # Limpiar y añadir solo archivos de producción
+        git rm -rf .
+        cp -r production/* .
+        rm -rf production
+        
+        git add .
+        git commit -m "Production build from ${{ github.sha }}"
+        git push origin production --force
