@@ -42,6 +42,7 @@ app.post('/api/notes', async (req, res) => {
 // Para Phusion Passenger en Plesk
 if (typeof(PhusionPassenger) !== 'undefined') {
     app.listen('passenger');
+    console.log('Server started with Phusion Passenger');
 } else {
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
