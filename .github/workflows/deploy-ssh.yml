@@ -1,0 +1,52 @@
+name: Deploy to Plesk SSH
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        
+    - name: Build Frontend
+      run: |
+        cd frontend
+        npm ci
+        npm run build
+        
+    - name: Prepare Backend
+      run: |
+        cd backend
+        npm ci --production
+        
+    - name: Deploy via SSH
+      uses: appleboy/ssh-action@v0.1.5
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        port: ${{ secrets.PORT }}
+        script: |
+          cd /var/www/vhosts/tudominio.com/httpdocs
+          git pull origin main
+          cd backend && npm ci --production
+          pm2 restart app || pm2 start index.js --name app
+          
+    - name: Upload Frontend Build
+      uses: appleboy/scp-action@v0.1.4
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        port: ${{ secrets.PORT }}
+        source: "frontend/dist/*"
+        target: "/var/www/vhosts/tudominio.com/httpdocs/"
+        strip_components: 2

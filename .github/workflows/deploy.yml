@@ -1,0 +1,48 @@
+name: Deploy to Plesk
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    # Build Frontend
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        
+    - name: Install and Build Frontend
+      run: |
+        cd frontend
+        npm ci
+        npm run build
+        
+    - name: Install Backend Dependencies
+      run: |
+        cd backend
+        npm ci --production
+        
+    # Deploy via FTP/FTPS a Plesk
+    - name: Deploy to Plesk via FTP
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+      with:
+        server: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        protocol: ftps
+        local-dir: ./
+        server-dir: /httpdocs/
+        exclude: |
+          **/.git*
+          **/.git*/**
+          **/node_modules/**
+          frontend/src/**
+          frontend/package*.json
+          frontend/vite.config.js
+          .github/**
